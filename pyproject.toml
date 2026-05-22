@@ -1,0 +1,45 @@
+[project]
+name = "regintel-mcp"
+version = "0.1.0"
+description = "MCP server for the RegIntel API — structured regulatory data across 41 jurisdictions and 212 regulations"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "RegIntel", email = "support@regintelapi.com" }]
+keywords = ["mcp", "model-context-protocol", "regulatory", "compliance", "regtech", "fintech", "gdpr", "kyc", "aml"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "mcp[cli]>=1.2.0",
+  "httpx>=0.27.0",
+]
+
+[project.urls]
+Homepage = "https://regintelapi.com/"
+Documentation = "https://regintelapi.com/docs.html"
+Repository = "https://github.com/ad0750/regintel-mcp"
+Issues = "https://github.com/ad0750/regintel-mcp/issues"
+
+[project.scripts]
+regintel-mcp = "regintel_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/regintel_mcp"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/README.md",
+  "/LICENSE",
+  "/pyproject.toml",
+]
