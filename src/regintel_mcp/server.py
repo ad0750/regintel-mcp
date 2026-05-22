@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.1.0"
+USER_AGENT = "regintel-mcp/0.1.1"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")

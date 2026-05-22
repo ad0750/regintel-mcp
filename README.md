@@ -1,5 +1,7 @@
 # regintel-mcp
 
+<!-- mcp-name: io.github.ad0750/regintel-mcp -->
+
 MCP server for the [RegIntel API](https://regintelapi.com/) — structured regulatory data across 41 jurisdictions and 212 regulations, accessible to any MCP-compatible LLM client (Claude Desktop, Claude Code, etc.).
 
 ## Tools
