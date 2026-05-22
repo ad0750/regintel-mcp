@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ad0750/regintel-mcp",
+  "description": "MCP server for the RegIntel API: regulatory data across 41 jurisdictions, 212 regulations.",
+  "repository": {
+    "url": "https://github.com/ad0750/regintel-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "regintel-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "REGINTEL_API_KEY",
+          "description": "Your RegIntel API key. Get a free key with 100 credits at https://regintelapi.com/get-key.html",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
