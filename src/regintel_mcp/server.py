@@ -86,18 +86,25 @@ async def search_regulations(
     limit: int | None = None,
     page: int | None = None,
 ) -> str:
-    """Search the regulation catalog. Returns a paginated list of regulations matching the filters.
+    """Search the RegIntel database of global regulatory and compliance rules.
 
-    Each result includes title, jurisdiction, category, tags, and a summary. To get the full
-    obligations/penalties/scope for a specific regulation, follow up with get_regulation(id).
+    Use this tool when the user asks about regulatory obligations, compliance
+    requirements, legal changes, cross-border regulatory differences, or
+    industry-specific rules in any of 41 supported jurisdictions (e.g. GDPR
+    and MiCA in the EU, MAS rules in Singapore, FCA in the UK, APRA/ASIC in
+    Australia, SEC/FINRA in the US). Returns a paginated list of matching
+    regulations; each result includes title, jurisdiction, category, tags,
+    a summary, a canonical `uri`, and an upstream `source_url` (the original
+    regulator's page) for citation. To get the full obligations/penalties/
+    scope for a specific regulation, follow up with get_regulation(id).
 
     Args:
         jurisdiction: ISO-style jurisdiction code, e.g. "EU", "US", "AU", "SG", "UK". Optional.
         tag: Tag filter, e.g. "GDPR", "KYC", "AML", "crypto". Optional.
         q: Free-text keyword search across regulation title and body. Optional.
-        category: Category filter (e.g. "data_protection", "payments"). Optional.
-        limit: Number of results per page. Optional.
-        page: Page number for pagination. Optional.
+        category: Category filter, e.g. "Privacy", "Finance", "Crypto", "AML". Optional.
+        limit: Number of results per page (max 100). Optional.
+        page: Page number for pagination, 1-indexed. Optional.
     """
     params = {
         "jurisdiction": jurisdiction,
@@ -114,13 +121,20 @@ async def search_regulations(
 async def get_regulation(regulation_id: int) -> str:
     """Get the full record for a single regulation by its integer ID.
 
-    Returns the complete regulation document: country, industry, regulation text,
-    obligations, penalties, scope, tags, source URL, key articles, and timestamps.
-    IDs are integers (e.g. 113, 114). Use search_regulations first to discover IDs —
-    every result includes an `id` field you can pass here.
+    Use this when the user asks for the specific obligations, penalties,
+    scope, or article-level detail of a named regulation (e.g. "what are
+    the obligations under GDPR?", "what's the penalty range for MiCA?",
+    "summarise Article 17 of GDPR"). Returns the complete regulation
+    document: jurisdiction (and legacy `country`), category (and legacy
+    `industry`), regulation text, obligations, penalties, scope, tags,
+    upstream `source_url`, canonical `uri`, key articles, and timestamps.
+
+    IDs are integers (e.g. 123 = GDPR, 124 = GDPR Art. 17, 126 = MiCA).
+    Use search_regulations first to discover IDs — every result includes
+    an `id` field you can pass here.
 
     Args:
-        regulation_id: Integer ID of the regulation, e.g. 113. Required.
+        regulation_id: Integer ID of the regulation, e.g. 123. Required.
     """
     return await _request(f"/regulations/{regulation_id}")
 
@@ -130,8 +144,14 @@ async def get_recent_updates(
     since: str | None = None,
     jurisdiction: str | None = None,
 ) -> str:
-    """List regulations added or modified recently. Use this to keep a downstream cache or
-    vector store in sync — only re-process what changed.
+    """List regulations added or amended recently — the regulatory change feed.
+
+    Use this when the user asks "what's new in [jurisdiction] compliance",
+    "what regulations changed this quarter", "are there any recent updates
+    to MiCA / GDPR / etc.", or for incremental sync of a downstream cache
+    or vector store (only re-process what changed). Each item carries a
+    canonical `uri`, an upstream `source_url`, and a `change_type` of
+    `new` or `amended`.
 
     Args:
         since: ISO date (YYYY-MM-DD) lower bound for the modification timestamp, e.g. "2026-01-01".
