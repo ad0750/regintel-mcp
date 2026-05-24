@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.1.1"
+USER_AGENT = "regintel-mcp/0.2.0"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
@@ -111,18 +111,17 @@ async def search_regulations(
 
 
 @mcp.tool()
-async def get_regulation(regulation_id: str) -> str:
-    """Get the full record for a single regulation by its unique ID.
+async def get_regulation(regulation_id: int) -> str:
+    """Get the full record for a single regulation by its integer ID.
 
-    Returns the complete regulation document: title, jurisdiction, obligations, penalties,
-    scope, tags, source URL, key articles, and timestamps. Use search_regulations first to
-    discover IDs.
+    Returns the complete regulation document: country, industry, regulation text,
+    obligations, penalties, scope, tags, source URL, key articles, and timestamps.
+    IDs are integers (e.g. 113, 114). Use search_regulations first to discover IDs —
+    every result includes an `id` field you can pass here.
 
     Args:
-        regulation_id: Regulation ID, e.g. "gdpr-2018". Required.
+        regulation_id: Integer ID of the regulation, e.g. 113. Required.
     """
-    if not regulation_id:
-        return "Error: regulation_id is required."
     return await _request(f"/regulations/{regulation_id}")
 
 
