@@ -1,7 +1,7 @@
 [project]
 name = "regintel-mcp"
 version = "0.2.0"
-description = "MCP server for the RegIntel API — structured regulatory data across 41 jurisdictions and 212 regulations"
+description = "MCP server for the RegIntel API. Structured regulatory data across 41 jurisdictions and 212+ regulations, with regulator citations. Requires a free API key from regintelapi.com/get-key (100 credits, no card)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
