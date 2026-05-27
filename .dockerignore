@@ -1,0 +1,19 @@
+# Keep the Docker build context minimal: only the package source +
+# pyproject.toml + README + LICENSE are needed for `pip install .`.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+dist/
+build/
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+*.md
+!README.md
+.DS_Store
+node_modules/
