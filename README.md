@@ -15,6 +15,7 @@ MCP server for the [RegIntel API](https://regintelapi.com/) — structured regul
 | `get_regulation` | Full record (obligations, penalties, scope, source URL) for one regulation by ID. |
 | `get_recent_updates` | Regulations added or modified since a date. Useful for keeping vector stores in sync. |
 | `check_compliance` | Decision signal (allowed / requires_license / restricted / prohibited) for an activity in a country. |
+| `get_aasb_s2_obligations` | Australian AASB-S2 climate-disclosure obligations. Filterable by Group tier, category code, reporting year. **Information only — does not calculate emissions or judge assurance.** |
 
 ## Install
 

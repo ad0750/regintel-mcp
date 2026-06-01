@@ -180,6 +180,50 @@ async def check_compliance(country: str, activity: str) -> str:
     return await _request("/compliance-check", params={"country": country, "activity": activity})
 
 
+@mcp.tool()
+async def get_aasb_s2_obligations(
+    group: int | None = None,
+    category_code: str | None = None,
+    reporting_year: int | None = None,
+) -> str:
+    """List Australian AASB-S2 (Climate-related Financial Disclosures) disclosure obligations
+    applicable to a covered entity.
+
+    INFORMATION ONLY. This tool returns the disclosure obligations imposed by AASB-S2 — what
+    an entity must say in its sustainability report. It does NOT calculate emissions, does NOT
+    judge whether figures will pass assurance, and does NOT determine which Group tier an
+    entity falls into. Use AASB-S2 directly and engage qualified climate-disclosure assurance
+    professionals before relying on positions.
+
+    Use this when the user asks: "what does AASB-S2 require?", "what Scope 3 disclosures
+    apply to my Australian company?", "when does AASB-S2 start for Group 2 / Group 3 entities?",
+    or "what governance disclosures are required under AASB-S2?".
+
+    Each obligation entry includes the disclosure category, paragraph references, applicability
+    per Group tier, effective date considering phase-in relief, assurance level, source URL to
+    the AASB-S2 standard, and the explicit ASIC enforcement context. Every response carries an
+    advisory string in `meta.advisory` reaffirming the information-only boundary.
+
+    Args:
+        group: Filter by entity Group tier (1 = largest entities reporting from FY commencing
+            1 Jan 2025; 2 = mid-tier from 1 Jul 2026; 3 = smaller from 1 Jul 2027). The tool
+            does NOT determine which Group an entity is in — the caller must classify based
+            on the entity's facts (employee count, revenue, gross assets, NGER status).
+        category_code: Filter to specific disclosure category, e.g. "AASB-S2-MET-GHG-S3" for
+            Scope 3 emissions, "AASB-S2-GOV" for governance. Optional. See the 13 category
+            codes in the API documentation.
+        reporting_year: Reporting year of interest (e.g. 2026). When supplied, the response
+            indicates whether each obligation is applicable that year given phase-in relief
+            and what assurance level applies.
+    """
+    params = {
+        "group": group,
+        "category_code": category_code,
+        "reporting_year": reporting_year,
+    }
+    return await _request("/v1/aasb-s2/obligations", params=params)
+
+
 def main() -> None:
     print(f"regintel-mcp starting (API base: {API_BASE})", file=sys.stderr)
     if not API_KEY:
