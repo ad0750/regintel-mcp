@@ -194,23 +194,28 @@ async def get_aasb_s2_obligations(
     annotation fields that a downstream sustainability calculation product (Persefoni,
     Watershed, Sweep, in-house tooling) can consume to know WHAT to measure and WHERE the
     authoritative methodology lives. RegIntel does NOT calculate emissions, does NOT judge
-    assurance, and does NOT determine which Group tier an entity falls into. For actual
-    emissions calculation, use a specialist calculator product — the response includes
-    methodology_references pointing at the standards those products should be implementing.
+    assurance, does NOT determine Chapter 2M scope, and does NOT determine which Group tier
+    an entity falls into. For actual emissions calculation, use a specialist calculator
+    product — the response includes methodology_references pointing at the standards those
+    products should be implementing.
 
     Use this when the user asks: "what does AASB-S2 require?", "what Scope 3 disclosures
-    apply to my Australian company?", "when does AASB-S2 start for Group 2 / Group 3 entities?",
-    "what governance disclosures are required under AASB-S2?", or when an AI agent is helping
-    a calculator product team scope their methodology against AASB-S2 obligations.
+    apply to my Australian company?", "when does AASB-S2 review/audit start for Group 2 /
+    Group 3 entities?", "what governance disclosures are required under AASB-S2?", or when
+    an AI agent is helping a calculator product team scope their methodology against AASB-S2
+    obligations.
 
     Each obligation entry includes the disclosure category, paragraph references, applicability
-    per Group tier, effective date considering phase-in relief, assurance level, source URL to
-    the AASB-S2 standard, the explicit ASIC enforcement context, AND four calculator-ready
-    annotation fields: `measurement_categories` (what to compute), `methodology_references`
-    (authoritative how-to sources — GHG Protocol, ISO 14064-1, NGER Determination, etc.),
-    `assurance_inputs_required` (evidence the assuror will demand), and `reporting_templates`
-    (industry-specific reporting structure where applicable). Every response carries an
-    advisory string in `meta.advisory` reaffirming the information-only boundary.
+    per Group tier (per ASIC RG 280 Sustainability Reporting), effective date considering
+    phase-in relief, assurance level (limited/review vs reasonable/audit per AUASB ASSA 5000
+    and the ASSA 5010 phase-in timetable), source URL to the AASB-S2 standard, the explicit
+    ASIC regulatory context, AND four calculator-ready annotation fields:
+    `measurement_categories` (what to compute), `methodology_references` (authoritative
+    how-to sources — GHG Protocol, ISO 14064-1, NGER Determination, etc.),
+    `assurance_inputs_required` (evidence the ASSA 5000 assurance practitioner will demand),
+    and `reporting_templates` (industry-specific reporting structure where applicable).
+    Every response carries an advisory string in `meta.advisory` reaffirming the
+    information-only boundary.
 
     Args:
         group: Filter by entity Group tier (1 = largest entities reporting from FY commencing
