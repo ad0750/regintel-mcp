@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ad0750/regintel-mcp",
-  "description": "MCP server for the RegIntel API: regulatory data across 41 jurisdictions, 212 regulations.",
+  "description": "Drop-in regulatory data for your LLM agent. Query 212+ rules across GDPR, MiCA, DORA, AASB-S2 climate disclosure, KYC/AML — cited to regulator sources.",
   "repository": {
     "url": "https://github.com/ad0750/regintel-mcp",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.4.0",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "regintel-mcp",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "transport": {
         "type": "stdio"
       },

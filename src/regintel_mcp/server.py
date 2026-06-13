@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from typing import Any
@@ -11,16 +12,214 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.3.0"
+USER_AGENT = "regintel-mcp/0.4.0"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Demo-mode helpers
+# ─────────────────────────────────────────────────────────────────────────────
+# When REGINTEL_API_KEY is not set, billed tools return a canned sample
+# response showing the shape of real data (so the LLM can answer "what would
+# the call look like?") together with a signup CTA. This is much friendlier
+# than just returning an error — the user / LLM gets to *see* the value
+# before being asked to commit.
+#
+# The demo response is clearly marked with `meta.demo_mode: true` and a
+# `demo_notice` so downstream code can tell live data from sample.
+
+DEMO_CTA = (
+    "\n\n---\n"
+    "★ The data above is a SAMPLE showing what a real response looks like.\n"
+    "★ For live queries against all 212+ regulations across 41 jurisdictions,\n"
+    "★ get a free API key (100 credits, no card, ~20 seconds):\n"
+    "★   https://regintelapi.com/k\n"
+    "★ Then set REGINTEL_API_KEY in your MCP client config and restart."
+)
+
+
+def _demo_response(body: dict[str, Any]) -> str:
+    """Format a demo dict as the same JSON the live API would return, plus the CTA."""
+    return json.dumps(body, indent=2, ensure_ascii=False) + DEMO_CTA
+
+
+DEMO_SEARCH_REGULATIONS: dict[str, Any] = {
+    "data": [
+        {
+            "id": 123,
+            "uri": "https://api.regintelapi.com/regulations/123",
+            "short_title": "GDPR — General Data Protection Regulation",
+            "jurisdiction": "EU",
+            "category": "Privacy",
+            "tags": ["GDPR", "privacy", "data-protection"],
+            "regulation": "Regulation (EU) 2016/679 on the protection of natural persons with regard to the processing of personal data.",
+            "obligations": "Controllers must establish a lawful basis under Article 6 before processing personal data; document processing activities; notify breaches to the supervisory authority within 72 hours; honour data-subject rights (access, rectification, erasure, portability).",
+            "penalties": "Administrative fines up to €20M or 4% of worldwide annual turnover (whichever is higher).",
+            "scope": "Any organisation processing personal data of EU residents, regardless of where the organisation is established.",
+            "source_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+            "status": "active",
+        },
+        {
+            "id": 126,
+            "uri": "https://api.regintelapi.com/regulations/126",
+            "short_title": "MiCA — Markets in Crypto-Assets Regulation",
+            "jurisdiction": "EU",
+            "category": "Crypto",
+            "tags": ["MiCA", "crypto", "stablecoin"],
+            "regulation": "Regulation (EU) 2023/1114 on markets in crypto-assets.",
+            "obligations": "Crypto-asset service providers must obtain authorisation from a national competent authority; issuers of asset-referenced tokens must publish a whitepaper and maintain reserve assets equal to the value in circulation.",
+            "penalties": "Up to €5M or 3% of annual turnover for legal persons; up to €700k for natural persons.",
+            "scope": "All crypto-asset service providers operating in the EU.",
+            "source_url": "https://eur-lex.europa.eu/eli/reg/2023/1114/oj",
+            "status": "active",
+        },
+    ],
+    "meta": {
+        "total": 212,
+        "page": 1,
+        "limit": 20,
+        "demo_mode": True,
+        "demo_notice": "Sample data — real query would search across all 212 regulations matching your filter.",
+    },
+}
+
+
+DEMO_GET_REGULATION: dict[str, Any] = {
+    "data": {
+        "id": 123,
+        "uri": "https://api.regintelapi.com/regulations/123",
+        "short_title": "GDPR — General Data Protection Regulation",
+        "jurisdiction": "EU",
+        "country": "EU",
+        "category": "Privacy",
+        "industry": "Privacy",
+        "tags": ["GDPR", "privacy", "data-protection"],
+        "regulation": "Regulation (EU) 2016/679 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data.",
+        "obligations": "Controllers must establish a lawful basis under Article 6 before processing personal data; perform DPIAs for high-risk processing; appoint a DPO where required; honour data-subject rights (access, rectification, erasure, restriction, portability, objection); notify the supervisory authority of breaches within 72 hours.",
+        "penalties": "Administrative fines up to €20M or 4% of total worldwide annual turnover of the preceding financial year (whichever is higher).",
+        "scope": "Any organisation processing personal data of individuals located in the EU, regardless of where the organisation is established.",
+        "key_articles": "Art. 6 (lawful basis), Art. 17 (right to erasure), Art. 25 (privacy by design), Art. 33 (breach notification), Art. 35 (DPIA), Art. 83 (penalties)",
+        "source_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+        "status": "active",
+        "effective_date": "2018-05-25",
+    },
+    "meta": {
+        "credits_used": 0,
+        "demo_mode": True,
+        "demo_notice": "Sample data for ID 123 (GDPR). Real call returns the full record for whichever ID you query.",
+    },
+}
+
+
+DEMO_GET_RECENT_UPDATES: dict[str, Any] = {
+    "data": [
+        {
+            "id": 325,
+            "uri": "https://api.regintelapi.com/regulations/325",
+            "short_title": "EDPB-EDPS Joint Opinion 2/2026 on Digital Omnibus GDPR Amendments",
+            "jurisdiction": "EU",
+            "category": "Privacy",
+            "change_type": "new",
+            "change_date": "2026-02-11",
+            "source_url": "https://edpb.europa.eu/our-work-tools/our-documents/edpbedps-joint-opinion/joint-opinion-22026_en",
+        },
+        {
+            "id": 318,
+            "uri": "https://api.regintelapi.com/regulations/318",
+            "short_title": "ASIC RG 280 Sustainability reporting — final guide",
+            "jurisdiction": "AU",
+            "category": "Finance",
+            "change_type": "amended",
+            "change_date": "2026-03-31",
+            "source_url": "https://download.asic.gov.au/media/j4rhwyiz/rg280-published-31-march-2025.pdf",
+        },
+    ],
+    "meta": {
+        "demo_mode": True,
+        "demo_notice": "Sample update feed. Real call returns regulations added/amended since the date you pass.",
+    },
+}
+
+
+def _demo_check_compliance(country: str, activity: str) -> dict[str, Any]:
+    """Build a check_compliance demo response that echoes the caller's args
+    so the user can see what their actual query would have returned.
+    The body intentionally reflects the input verbatim, not a real lookup."""
+    return {
+        "data": {
+            "decision": "requires_license",
+            "risk_level": "medium",
+            "country": country,
+            "activity": activity,
+            "summary": f"Demo result: {activity} activity in {country} typically requires registration with the local regulator. The live endpoint returns the real decision plus the source regulations.",
+            "obligations": [
+                "Register the activity with the relevant local regulator before commencing operations",
+                "Maintain an AML/CTF program proportionate to the activity",
+                "Conduct customer due diligence (CDD) and ongoing monitoring",
+            ],
+            "penalties": "Up to 2 years imprisonment and/or substantial fines under local AML/CTF legislation (varies by jurisdiction).",
+            "disclaimer": "NOT LEGAL ADVICE. Always consult a qualified legal professional in the relevant jurisdiction.",
+            "source_regulations": [
+                {"id": 123, "uri": "https://api.regintelapi.com/regulations/123", "title": "Example AML/CTF Act"},
+            ],
+        },
+        "meta": {
+            "demo_mode": True,
+            "demo_notice": f"Sample decision for ({country}, {activity}). Real call returns the live decision derived from the structured rules.",
+        },
+    }
+
+
+DEMO_GET_AASB_S2_OBLIGATIONS: dict[str, Any] = {
+    "data": [
+        {
+            "id": 13,
+            "requirement_code": "AASB-S2-REQ-013",
+            "pillar": "metrics_targets",
+            "category_code": "AASB-S2-MET-GHG-S3",
+            "paragraph_ref": "¶29(a)(i)(3), (vi)",
+            "title": "Scope 3 emissions",
+            "obligation_text": "Disclose absolute gross Scope 3 emissions and state which of the 15 GHG-Protocol value-chain categories are included.",
+            "type": "quantitative",
+            "source_url": "https://standards.aasb.gov.au/aasb-s2-sep-2024",
+            "applicability_per_group": {
+                "group_1": {
+                    "group_code": "group_1",
+                    "group_label": "Group 1 — largest entities",
+                    "first_reporting_period_start_date": "2025-01-01",
+                    "applies": True,
+                    "assurance_level": None,
+                    "reliefs": [
+                        {
+                            "relief_type": "scope_3_year1_exemption",
+                            "relief_summary": "Scope 3 disclosure not required in the entity's first annual reporting period under AASB S2.",
+                            "relief_expiry": "2026-01-01",
+                            "source_reference": "AASB S2 Appendix C4(b)",
+                        }
+                    ],
+                }
+            },
+            "measurement_categories": [],
+            "methodology_references": [],
+            "assurance_inputs_required": [],
+            "reporting_templates": [],
+        }
+    ],
+    "meta": {
+        "total": 26,
+        "demo_mode": True,
+        "demo_notice": "Sample obligation (Scope 3 emissions). Real call returns up to 26 obligations across the 4 AASB-S2 pillars with full per-Group applicability.",
+        "advisory": "Information only. RegIntel does not calculate emissions, does not judge assurance, does not determine Chapter 2M scope or Group tier.",
+    },
+}
 
 
 async def _request(
     path: str,
     params: dict[str, Any] | None = None,
     auth_required: bool = True,
+    demo_response: dict[str, Any] | None = None,
 ) -> str:
     """GET helper that returns a string ready to hand back to the LLM.
 
@@ -29,8 +228,15 @@ async def _request(
 
     auth_required=False is used by list_jurisdictions so a new installer can
     verify the package works before being asked to sign up.
+
+    demo_response is used by billed tools when no API key is set: instead of
+    failing with an error, the tool returns a canned sample showing the
+    response shape, plus a signup CTA. The LLM sees the value first and is
+    then asked to commit.
     """
     if auth_required and not API_KEY:
+        if demo_response is not None:
+            return _demo_response(demo_response)
         return (
             "RegIntel API key required for this tool.\n\n"
             "Get a free key — 100 credits, no card, ~20 seconds:\n"
@@ -131,7 +337,7 @@ async def search_regulations(
         "limit": limit,
         "page": page,
     }
-    return await _request("/regulations", params=params)
+    return await _request("/regulations", params=params, demo_response=DEMO_SEARCH_REGULATIONS)
 
 
 @mcp.tool()
@@ -153,7 +359,7 @@ async def get_regulation(regulation_id: int) -> str:
     Args:
         regulation_id: Integer ID of the regulation, e.g. 123. Required.
     """
-    return await _request(f"/regulations/{regulation_id}")
+    return await _request(f"/regulations/{regulation_id}", demo_response=DEMO_GET_REGULATION)
 
 
 @mcp.tool()
@@ -175,7 +381,11 @@ async def get_recent_updates(
             If omitted, the API returns the default recent window.
         jurisdiction: Optional jurisdiction code to scope the query, e.g. "EU".
     """
-    return await _request("/updates", params={"since": since, "jurisdiction": jurisdiction})
+    return await _request(
+        "/updates",
+        params={"since": since, "jurisdiction": jurisdiction},
+        demo_response=DEMO_GET_RECENT_UPDATES,
+    )
 
 
 @mcp.tool()
@@ -194,7 +404,11 @@ async def check_compliance(country: str, activity: str) -> str:
     """
     if not country or not activity:
         return "Error: both 'country' and 'activity' are required."
-    return await _request("/compliance-check", params={"country": country, "activity": activity})
+    return await _request(
+        "/compliance-check",
+        params={"country": country, "activity": activity},
+        demo_response=_demo_check_compliance(country, activity),
+    )
 
 
 @mcp.tool()
@@ -251,7 +465,11 @@ async def get_aasb_s2_obligations(
         "category_code": category_code,
         "reporting_year": reporting_year,
     }
-    return await _request("/v1/aasb-s2/obligations", params=params)
+    return await _request(
+        "/v1/aasb-s2/obligations",
+        params=params,
+        demo_response=DEMO_GET_AASB_S2_OBLIGATIONS,
+    )
 
 
 def main() -> None:
