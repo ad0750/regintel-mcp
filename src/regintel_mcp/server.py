@@ -11,27 +11,39 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.2.0"
+USER_AGENT = "regintel-mcp/0.3.0"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
 
 
-async def _request(path: str, params: dict[str, Any] | None = None) -> str:
+async def _request(
+    path: str,
+    params: dict[str, Any] | None = None,
+    auth_required: bool = True,
+) -> str:
     """GET helper that returns a string ready to hand back to the LLM.
 
     Errors are returned as plain-text messages rather than raised so the LLM
     sees an actionable explanation instead of a stack trace.
+
+    auth_required=False is used by list_jurisdictions so a new installer can
+    verify the package works before being asked to sign up.
     """
-    if not API_KEY:
+    if auth_required and not API_KEY:
         return (
-            "Error: REGINTEL_API_KEY environment variable is not set. "
-            "Get a free API key at https://regintelapi.com/get-key.html and set "
-            "REGINTEL_API_KEY in your MCP client configuration."
+            "RegIntel API key required for this tool.\n\n"
+            "Get a free key — 100 credits, no card, ~20 seconds:\n"
+            "  https://regintelapi.com/k\n\n"
+            "Then set REGINTEL_API_KEY in your MCP client config and restart.\n\n"
+            "Tip: list_jurisdictions works without a key, so you can verify the "
+            "package is installed correctly before signing up."
         )
 
     url = f"{API_BASE}{path}"
-    headers = {"x-api-key": API_KEY, "User-Agent": USER_AGENT, "Accept": "application/json"}
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    if API_KEY:
+        headers["x-api-key"] = API_KEY
     cleaned = {k: v for k, v in (params or {}).items() if v is not None and v != ""}
 
     try:
@@ -52,7 +64,11 @@ async def _request(path: str, params: dict[str, Any] | None = None) -> str:
         message = response.text
 
     if response.status_code == 401:
-        return f"Error 401 (unauthorized): {message}. Check that REGINTEL_API_KEY is correct."
+        return (
+            f"Error 401 (unauthorized): {message}.\n"
+            "Check that REGINTEL_API_KEY is set correctly. If you don't have a key, "
+            "get one in ~20 seconds at https://regintelapi.com/k"
+        )
     if response.status_code == 403:
         return (
             f"Error 403 (forbidden): {message}. You may be out of credits — "
@@ -72,9 +88,10 @@ async def list_jurisdictions() -> str:
 
     Use this to discover the universe of supported regions (currently 41) and the canonical
     jurisdiction codes you can pass to other tools like search_regulations or check_compliance.
-    This endpoint does not consume API credits.
+    This endpoint does not consume API credits AND does not require an API key — useful as a
+    smoke test after installing the regintel-mcp package.
     """
-    return await _request("/jurisdictions")
+    return await _request("/jurisdictions", auth_required=False)
 
 
 @mcp.tool()

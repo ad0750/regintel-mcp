@@ -6,20 +6,20 @@
     "url": "https://github.com/ad0750/regintel-mcp",
     "source": "github"
   },
-  "version": "0.1.1",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "regintel-mcp",
-      "version": "0.1.1",
+      "version": "0.3.0",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
           "name": "REGINTEL_API_KEY",
-          "description": "Your RegIntel API key. Get a free key with 100 credits at https://regintelapi.com/get-key.html",
-          "isRequired": true,
+          "description": "Your RegIntel API key. Required for billed tools (search_regulations, get_regulation, check_compliance, get_aasb_s2_obligations). list_jurisdictions works without it as a smoke test after install. Get a free key with 100 credits at https://regintelapi.com/k",
+          "isRequired": false,
           "isSecret": true
         }
       ]
