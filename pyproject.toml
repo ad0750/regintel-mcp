@@ -1,12 +1,12 @@
 [project]
 name = "regintel-mcp"
-version = "0.4.0"
-description = "Drop-in regulatory data for your Claude / LLM agent. Query GDPR, MiCA, DORA, AASB-S2 climate disclosure, KYC/AML across 41 jurisdictions — cited to regulator sources. list_jurisdictions works without a key; free key (100 credits, no card) at regintelapi.com/k."
+version = "0.5.0"
+description = "Drop-in regulatory data for your Claude / LLM agent. Query GDPR, MiCA, DORA, AASB-S2 climate disclosure, Australian Migration Act / OMARA Code / Skilled Occupation List, NDIS Pricing Arrangements + Practice Standards, KYC/AML across 41 jurisdictions — cited to regulator sources. list_jurisdictions works without a key; free key (100 credits, no card) at regintelapi.com/k."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "RegIntel", email = "support@regintelapi.com" }]
-keywords = ["mcp", "model-context-protocol", "regulatory", "compliance", "regtech", "fintech", "gdpr", "kyc", "aml"]
+keywords = ["mcp", "model-context-protocol", "regulatory", "compliance", "regtech", "fintech", "gdpr", "kyc", "aml", "aasb-s2", "migration-act", "omara", "ndis", "australia"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: MIT License",

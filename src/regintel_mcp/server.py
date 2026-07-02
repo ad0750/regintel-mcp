@@ -12,7 +12,7 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.4.0"
+USER_AGENT = "regintel-mcp/0.5.0"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
@@ -315,15 +315,21 @@ async def search_regulations(
     requirements, legal changes, cross-border regulatory differences, or
     industry-specific rules in any of 41 supported jurisdictions (e.g. GDPR
     and MiCA in the EU, MAS rules in Singapore, FCA in the UK, APRA/ASIC in
-    Australia, SEC/FINRA in the US). Returns a paginated list of matching
-    regulations; each result includes title, jurisdiction, category, tags,
-    a summary, a canonical `uri`, and an upstream `source_url` (the original
-    regulator's page) for citation. To get the full obligations/penalties/
-    scope for a specific regulation, follow up with get_regulation(id).
+    Australia, SEC/FINRA in the US). Australian coverage now includes deep
+    verticals: AASB-S2 climate disclosure (Chapter 2M reporting entities),
+    Migration Act / Regulations / Skilled Occupation List instruments (for
+    Registered Migration Agents meeting OMARA Code library obligations), and
+    NDIS Act / Pricing Arrangements / Practice Standards / Code of Conduct
+    (for registered NDIS providers and plan managers). Returns a paginated
+    list of matching regulations; each result includes title, jurisdiction,
+    category, tags, a summary, a canonical `uri`, and an upstream
+    `source_url` (the original regulator's page) for citation. To get the
+    full obligations/penalties/scope for a specific regulation, follow up
+    with get_regulation(id).
 
     Args:
         jurisdiction: ISO-style jurisdiction code, e.g. "EU", "US", "AU", "SG", "UK". Optional.
-        tag: Tag filter, e.g. "GDPR", "KYC", "AML", "crypto". Optional.
+        tag: Tag filter, e.g. "GDPR", "KYC", "AML", "crypto", "migration", "ndis", "pricing-arrangements", "aasb-s2". Optional.
         q: Free-text keyword search across regulation title and body. Optional.
         category: Category filter, e.g. "Privacy", "Finance", "Crypto", "AML". Optional.
         limit: Number of results per page (max 100). Optional.
