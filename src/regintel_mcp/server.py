@@ -12,7 +12,7 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.5.0"
+USER_AGENT = "regintel-mcp/0.6.0"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
@@ -229,23 +229,11 @@ async def _request(
     auth_required=False is used by list_jurisdictions so a new installer can
     verify the package works before being asked to sign up.
 
-    demo_response is used by billed tools when no API key is set: instead of
-    failing with an error, the tool returns a canned sample showing the
-    response shape, plus a signup CTA. The LLM sees the value first and is
-    then asked to commit.
+    demo_response is a canned sample used ONLY after the server-side anonymous
+    probe quota (5 calls per IP) is exhausted. First 5 anonymous calls hit
+    the real API and return real data plus a countdown; the 6th and onward
+    return the demo + upgrade prompt.
     """
-    if auth_required and not API_KEY:
-        if demo_response is not None:
-            return _demo_response(demo_response)
-        return (
-            "RegIntel API key required for this tool.\n\n"
-            "Get a free key — 100 credits, no card, ~20 seconds:\n"
-            "  https://regintelapi.com/k\n\n"
-            "Then set REGINTEL_API_KEY in your MCP client config and restart.\n\n"
-            "Tip: list_jurisdictions works without a key, so you can verify the "
-            "package is installed correctly before signing up."
-        )
-
     url = f"{API_BASE}{path}"
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if API_KEY:
@@ -261,19 +249,72 @@ async def _request(
         return f"Error: network failure calling {path}: {exc}"
 
     if response.status_code == 200:
+        # Append anon-quota countdown when we're on the free probe path
+        # (server sets x-anon-calls-remaining when the request had no API key).
+        remaining = response.headers.get("x-anon-calls-remaining")
+        if remaining is not None and not API_KEY:
+            try:
+                n = int(remaining)
+            except ValueError:
+                n = None
+            if n is not None:
+                if n == 0:
+                    footer = (
+                        "\n\n---\n"
+                        "That was your last free anonymous probe (5 per IP). "
+                        "Next call needs an API key — free (100 credits, no card, "
+                        "~20 seconds) at https://regintelapi.com/k"
+                    )
+                else:
+                    footer = (
+                        f"\n\n---\n"
+                        f"Anonymous probe: {n} free call(s) remaining. "
+                        f"Get a free API key (100 credits, no card) at "
+                        f"https://regintelapi.com/k"
+                    )
+                return response.text + footer
         return response.text
 
     try:
         body = response.json()
-        message = body.get("message") or body.get("error") or response.text
+        detail = body.get("detail")
+        # FastAPI wraps HTTPException detail objects — unwrap to inspect.
+        if isinstance(detail, dict):
+            message = detail.get("message") or detail.get("error") or response.text
+            error_code = detail.get("error", "")
+        else:
+            message = detail or body.get("message") or body.get("error") or response.text
+            error_code = ""
     except Exception:
         message = response.text
+        error_code = ""
+
+    # Anon probe quota exhausted — show demo (if defined) + strong upgrade prompt.
+    if response.status_code == 402 and error_code == "anonymous_quota_exhausted":
+        prompt = (
+            "You've used your 5 free anonymous probes to RegIntel from this "
+            "network. Get a free API key — 100 credits, no card, ~20 seconds:\n"
+            "  https://regintelapi.com/k\n\n"
+            "Then set REGINTEL_API_KEY in your MCP client config and restart."
+        )
+        if demo_response is not None:
+            return (
+                _demo_response(demo_response)
+                + "\n\n---\n"
+                + prompt
+            )
+        return prompt
 
     if response.status_code == 401:
         return (
             f"Error 401 (unauthorized): {message}.\n"
             "Check that REGINTEL_API_KEY is set correctly. If you don't have a key, "
             "get one in ~20 seconds at https://regintelapi.com/k"
+        )
+    if response.status_code == 402:
+        return (
+            f"Error 402 (payment required): {message}. "
+            "Top up credits at https://regintelapi.com/dashboard.html?topup=true"
         )
     if response.status_code == 403:
         return (
