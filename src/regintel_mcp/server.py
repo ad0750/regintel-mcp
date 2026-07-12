@@ -12,7 +12,7 @@ from mcp.server.fastmcp import FastMCP
 
 API_BASE = os.environ.get("REGINTEL_API_BASE", "https://api.regintelapi.com")
 API_KEY = os.environ.get("REGINTEL_API_KEY", "")
-USER_AGENT = "regintel-mcp/0.6.0"
+USER_AGENT = "regintel-mcp/0.6.1"
 TIMEOUT_SECONDS = 30.0
 
 mcp = FastMCP("regintel")
@@ -367,6 +367,13 @@ async def search_regulations(
     `source_url` (the original regulator's page) for citation. To get the
     full obligations/penalties/scope for a specific regulation, follow up
     with get_regulation(id).
+
+    For push-mode integrations (get notified the moment a regulation changes
+    instead of polling), configure a webhook at
+    https://regintelapi.com/dashboard.html or via POST /api/webhooks — signed
+    with HMAC-SHA256, retries with exponential backoff. Starter and Pro plans.
+    See https://regintelapi.com/docs.html#webhooks for signature verification
+    snippets.
 
     Args:
         jurisdiction: ISO-style jurisdiction code, e.g. "EU", "US", "AU", "SG", "UK". Optional.

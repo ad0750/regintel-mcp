@@ -1,6 +1,6 @@
 [project]
 name = "regintel-mcp"
-version = "0.6.0"
+version = "0.6.1"
 description = "Drop-in regulatory data for your Claude / LLM agent. Query GDPR, MiCA, DORA, AASB-S2 climate disclosure, Australian Migration Act / OMARA Code / Skilled Occupation List, NDIS Pricing Arrangements + Practice Standards, KYC/AML across 41 jurisdictions — cited to regulator sources. First 5 calls per IP work without an API key (real data, not demo); free key (100 credits, no card) at regintelapi.com/k."
 readme = "README.md"
 requires-python = ">=3.10"
