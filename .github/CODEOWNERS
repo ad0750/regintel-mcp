@@ -1,0 +1,32 @@
+# CODEOWNERS for regintel/regintel-mcp
+# Goes at .github/CODEOWNERS in the repo root.
+#
+# This repo publishes to PyPI. Any change to version, description, or the
+# tool docstrings is immediately visible to anyone who runs `pip install
+# regintel-mcp`. Amar reviews prod-affecting files; friend can freely PR
+# tests, README improvements, or non-published helpers.
+
+# Global — Amar reviews everything
+*                                        @ad0750
+
+# ─── PyPI-published surface (version + description + package meta) ─
+/pyproject.toml                          @ad0750
+/setup.py                                @ad0750
+/setup.cfg                               @ad0750
+/README.md                               @ad0750
+/MANIFEST.in                             @ad0750
+
+# ─── The MCP server itself (tool signatures + docstrings become the ─
+# ─── contract every LLM client reads) ────────────────────────────
+/src/regintel_mcp/                       @ad0750
+/src/regintel_mcp/server.py              @ad0750
+
+# ─── MCP Registry metadata ─────────────────────────────────────
+/server.json                             @ad0750
+
+# ─── Docker packaging (published image) ────────────────────────
+/Dockerfile                              @ad0750
+/.dockerignore                           @ad0750
+
+# ─── Release automation ────────────────────────────────────────
+/.github/workflows/                      @ad0750
